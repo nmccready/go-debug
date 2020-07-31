@@ -39,6 +39,7 @@ type Debugger struct {
 type IDebugger interface {
 	Log(...interface{})
 	Error(...interface{})
+	Warn(...interface{})
 	Spawn(ns string) *Debugger
 	WithFields(fields map[string]interface{}) *Debugger
 	WithField(key string, value interface{}) *Debugger
@@ -267,9 +268,12 @@ func (dbg *Debugger) Log(args ...interface{}) {
 	dbg.prev = time.Now()
 }
 
+// prepend error/warn name as it is easier to filter!
 func (dbg *Debugger) Error(args ...interface{}) {
-	// prepend error name as it is easier to filter!
 	Debug("error:" + dbg.name).Log(args...)
+}
+func (dbg *Debugger) Warn(args ...interface{}) {
+	Debug("warn:" + dbg.name).Log(args...)
 }
 
 func (dbg *Debugger) WithFields(fields map[string]interface{}) *Debugger {

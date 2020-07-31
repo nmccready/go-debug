@@ -189,7 +189,7 @@ func TestSpawnMultipleEnabled(t *testing.T) {
 	buf := bytes.NewBuffer(b)
 	SetWriter(buf)
 
-	Enable("error*,foo*,bar*")
+	Enable("error*,warn*,foo*,bar*")
 
 	//nolint
 	var foo IDebugger
@@ -201,6 +201,7 @@ func TestSpawnMultipleEnabled(t *testing.T) {
 	bar := Debug("bar").Spawn("child").Spawn("grandChild")
 	bar.Log("bar")
 	bar.Error("oops")
+	bar.Warn("poo")
 	bar.Error(func() string { return "oh no" })
 	bar.Log(func() string { return "bar lazy" })
 
@@ -217,6 +218,8 @@ func TestSpawnMultipleEnabled(t *testing.T) {
 	assert.Contains(t, str, "bar lazy")
 	assert.Contains(t, str, "error:bar")
 	assert.Contains(t, str, "oops")
+	assert.Contains(t, str, "warn:bar")
+	assert.Contains(t, str, "poo")
 	assert.Contains(t, str, "oh no")
 }
 
