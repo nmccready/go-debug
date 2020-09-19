@@ -25,6 +25,8 @@ var (
 	HAS_TIME             = true
 	formatter  Formatter = &TextFormatter{HasColor: true}
 	negRegEx             = regexp.MustCompile(`^-.*?`)
+	textRegex            = regexp.MustCompile(`(?i)text`)
+	jsonRegex            = regexp.MustCompile(`(?i)json`)
 )
 
 type Fields map[string]interface{}
@@ -61,14 +63,13 @@ func init() {
 	cacheMinStr := os.Getenv("DEBUG_CACHE_MINUTES")
 	colorOffStr := os.Getenv("DEBUG_COLOR_OFF")
 	timeOffStr := os.Getenv("DEBUG_TIME_OFF")
-
 	if "" != env {
 		Enable(env)
 	}
 
 	SetHasColors(colorOffStr == "")
 	SetHasTime(timeOffStr == "")
-
+	SetFormatterString(os.Getenv("DEBUG_FORMATTER")) // after HAS_COLOR and HAS_TIME on purpose
 	err := SetCache(cacheMinStr)
 
 	if err != nil {
@@ -94,6 +95,20 @@ func SetFormatter(f Formatter) {
 	m.Lock()
 	defer m.Unlock()
 	formatter = f
+}
+
+func SetFormatterString(s string) {
+	var _f Formatter = &TextFormatter{HasColor: HAS_COLORS}
+	if s == "" {
+		return
+	}
+
+	if jsonRegex.MatchString(s) {
+		// default to PRETTY true
+		_f = &JSONFormatter{PrettyPrint: os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == ""}
+	}
+
+	SetFormatter(_f)
 }
 
 /*

@@ -1,10 +1,12 @@
 package debug
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"runtime"
+	"strconv"
+
+	"github.com/TylerBrock/colorjson"
+	"github.com/fatih/color"
 )
 
 // JSONFormatter formats logs into parsable json
@@ -15,8 +17,8 @@ type JSONFormatter struct {
 	// DisableTimestamp allows disabling automatic timestamps in output
 	// DisableTimestamp bool
 
-	// DisableHTMLEscape allows disabling html escaping in output
-	DisableHTMLEscape bool
+	// HTMLEscape allows disabling html escaping in output
+	HTMLEscape bool
 
 	// FieldMap allows users to customize the names of keys for default fields.
 	// As an example:
@@ -41,6 +43,15 @@ type JSONFormatter struct {
 }
 
 func (f *JSONFormatter) Format(dbg *Debugger, msg string) string {
+	/*
+		 Colors disabled due to:
+		 {
+				"delta": "252ms",
+				"msg": "oops",
+				"namespace": "\u001b[31merror:example:multiple:b\u001b[0m",
+				"time": "20:53:24.798"
+			}
+	*/
 	finalized := finalizeFields(dbg, msg, false, func(k string, v interface{}) interface{} {
 		switch v := v.(type) {
 		case error:
@@ -52,18 +63,26 @@ func (f *JSONFormatter) Format(dbg *Debugger, msg string) string {
 		}
 	})
 
-	b := &bytes.Buffer{}
+	// b := &bytes.Buffer{}
 
-	encoder := json.NewEncoder(b)
-	encoder.SetEscapeHTML(!f.DisableHTMLEscape)
-	if f.PrettyPrint {
-		encoder.SetIndent("", "  ")
-	}
-	if err := encoder.Encode(finalized.Fields); err != nil {
+	// encoder := json.NewEncoder(b)
+	// encoder.SetEscapeHTML(!f.DisableHTMLEscape)
+	// if f.PrettyPrint {
+	// 	encoder.SetIndent("", "  ")
+	// }
+	// err := encoder.Encode(finalized.Fields)
+	_f := colorjson.NewFormatter()
+	_f.DisabledColor = !HAS_COLORS
+	_f.HTMLEscape = f.HTMLEscape
+	_f.Indent = 2
+	intColor, _ := strconv.Atoi(dbg.color)
+	_f.KeyMapColors["namespace"] = color.New(color.Attribute(intColor))
+	b, err := _f.Marshal(map[string]interface{}(finalized.Fields))
+	if err != nil {
 		return fmt.Sprintf("failed to marshal fields to JSON, %v", err)
 	}
-
-	return b.String()
+	return string(b) + "\n"
+	// return b.String()
 }
 
 func (f *JSONFormatter) GetHasFieldsOnly() bool {
