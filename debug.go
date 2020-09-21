@@ -301,10 +301,14 @@ func (dbg *Debugger) Log(args ...interface{}) {
 
 // prepend error/warn name as it is easier to filter!
 func (dbg *Debugger) Error(args ...interface{}) {
-	Debug("error:" + dbg.name).Log(args...)
+	d := Debug("error:" + dbg.name)
+	d.fields = dbg.fields
+	d.Log(args...)
 }
 func (dbg *Debugger) Warn(args ...interface{}) {
-	Debug("warn:" + dbg.name).Log(args...)
+	d := Debug("warn:" + dbg.name)
+	d.fields = dbg.fields
+	d.Log(args...)
 }
 
 func (dbg *Debugger) WithFields(fields map[string]interface{}) *Debugger {
