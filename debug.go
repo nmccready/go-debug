@@ -103,7 +103,20 @@ func SetFormatterString(s string) {
 
 	if jsonRegex.MatchString(s) {
 		// default to PRETTY true
-		_f = &JSONFormatter{PrettyPrint: os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == ""}
+		jf := &JSONFormatter{
+			PrettyPrint:      os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == "",
+			FlattenMsgFields: os.Getenv("DEBUG_FORMATTER_FLATTEN_FIELDS") != "",
+		}
+		indent := os.Getenv("DEBUG_FORMATTER_INDENT")
+		if indent != "" {
+			i, err := strconv.Atoi(indent)
+			if err != nil {
+				panic(err)
+			}
+			jf.Indent = i
+		}
+		fmt.Printf("jf: %+v\n", jf)
+		_f = jf
 	}
 
 	SetFormatter(_f)

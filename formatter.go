@@ -31,7 +31,7 @@ type TextFormatter struct {
 func (t *TextFormatter) Format(dbg *Debugger, _msg interface{}) string {
 	msg, didCast := _msg.(string)
 	if !didCast {
-		msg = "TextFormatter Invalid Msg Type must be a string"
+		msg = fmt.Sprintf("%+v", _msg)
 	}
 	mainMsg := ""
 	fields := ""

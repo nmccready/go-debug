@@ -10,11 +10,11 @@ import (
 func work(debug *Debugger, delay time.Duration) {
 	for {
 		debug.Log("a string")
-		// debug.Log(Fields{
-		// 	"one":   1,
-		// 	"bool":  true,
-		// 	"junk1": "hi junk1",
-		// })
+		debug.Log(Fields{
+			"one":   1,
+			"bool":  true,
+			"junk1": "hi junk1",
+		})
 		time.Sleep(delay)
 	}
 }

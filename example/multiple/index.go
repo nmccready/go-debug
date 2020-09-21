@@ -11,6 +11,9 @@ func work(debug *Debugger, delay time.Duration) {
 	for {
 		debug.Log("doing stuff")
 		debug.Log("<body>Hi</body>")
+		debug.Log(Fields{
+			"oh": "hi",
+		})
 		debug.Error("oops")
 		time.Sleep(delay)
 	}
@@ -18,10 +21,8 @@ func work(debug *Debugger, delay time.Duration) {
 
 func main() {
 	a := rootDebug.Spawn("multiple:a").WithFields(Fields{
-		"junk":     "hi junk",
-		"another":  1,
-		"another2": 2,
-		"junk1":    "hi junk1",
+		"junk":    "hi junk",
+		"another": 1,
 	})
 	var b = rootDebug.Spawn("multiple:b")
 	var c = rootDebug.Spawn("multiple:c")
