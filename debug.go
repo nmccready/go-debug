@@ -115,7 +115,6 @@ func SetFormatterString(s string) {
 			}
 			jf.Indent = i
 		}
-		fmt.Printf("jf: %+v\n", jf)
 		_f = jf
 	}
 
