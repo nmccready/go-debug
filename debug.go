@@ -109,11 +109,7 @@ func SetFormatterString(s string) {
 
 	if jsonRegex.MatchString(s) {
 		// default to PRETTY true
-		j := JSONFormatter{PrettyPrint: os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == ""}
-		if j.PrettyPrint && j.Indent == 0 {
-			j.Indent = 2
-		}
-		_f = &j
+		_f = &JSONFormatter{PrettyPrint: os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == ""}
 	}
 
 	SetFormatter(_f)

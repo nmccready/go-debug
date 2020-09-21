@@ -55,6 +55,10 @@ func (f *JSONFormatter) Format(dbg *Debugger, msg string) string {
 	*/
 	finalized := finalizeFields(dbg, msg, false, nil)
 
+	if f.PrettyPrint && f.Indent == 0 {
+		f.Indent = 2
+	}
+
 	_f := colorjson.NewFormatter()
 	_f.DisabledColor = !HAS_COLORS
 	_f.HTMLEscape = f.HTMLEscape
