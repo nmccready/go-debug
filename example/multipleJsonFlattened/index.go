@@ -9,30 +9,30 @@ import (
 
 func work(debug *Debugger, delay time.Duration) {
 	for {
-		debug.Log("doing stuff")
+		debug.Log("a string")
+		// debug.Log(Fields{
+		// 	"one":   1,
+		// 	"bool":  true,
+		// 	"junk1": "hi junk1",
+		// })
 		time.Sleep(delay)
 	}
 }
 
 func main() {
-	SetFormatter(&JSONFormatter{})
+	SetFormatter(&JSONFormatter{PrettyPrint: true, FlattenMsgFields: true})
 	a := rootDebug.Spawn("multiple:a").WithFields(Fields{
-		"junk":     "hi junk",
-		"another":  1,
-		"another2": 2,
-		"junk1":    "hi junk1",
+		"global": "global field",
 	})
 	// fmt.Printf("fields %s\n", a.)
 	var b = rootDebug.Spawn("multiple:b")
 	var c = rootDebug.Spawn("multiple:c")
-	var d = rootDebug.Spawn("multiple:d")
 
 	q := make(chan bool)
 
-	go work(a, 500*time.Millisecond)
+	go work(a, 1000*time.Millisecond)
 	go work(b, 250*time.Millisecond)
 	go work(c, 100*time.Millisecond)
-	go work(d, 120*time.Millisecond)
 
 	<-q
 }

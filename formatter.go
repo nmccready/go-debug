@@ -15,7 +15,7 @@ const (
 
 // highly inspired by logrus
 type Formatter interface {
-	Format(*Debugger, string) string
+	Format(*Debugger, interface{}) string
 	GetHasFieldsOnly() bool
 }
 
@@ -28,13 +28,17 @@ type TextFormatter struct {
 	SortingFunc      func(keys []string)
 }
 
-func (t *TextFormatter) Format(dbg *Debugger, msg string) string {
+func (t *TextFormatter) Format(dbg *Debugger, _msg interface{}) string {
+	msg, didCast := _msg.(string)
+	if !didCast {
+		msg = "TextFormatter Invalid Msg Type must be a string"
+	}
 	mainMsg := ""
 	fields := ""
 
 	var keys []string
 
-	finalized := finalizeFields(dbg, msg, HAS_COLORS && t.HasColor, func(k string, v interface{}) interface{} {
+	finalized := finalizeFields(dbg, msg, HAS_COLORS && t.HasColor, false, func(k string, v interface{}) interface{} {
 		keys = append(keys, k)
 		return nil
 	})
@@ -127,11 +131,16 @@ type Finalized struct {
 	Delta      string
 }
 
-func finalizeFields(dbg *Debugger, msg string, hasColor bool, cb func(string, interface{}) interface{}) *Finalized {
+func finalizeFields(
+	dbg *Debugger, msg string, hasColor bool, flattenMsg bool, cb func(string, interface{}) interface{}) *Finalized {
 	ts, delta := deltas(dbg.prev)
 	ns := getColorStr(dbg.color, hasColor) + dbg.name + getColorOff(hasColor)
 
 	fields := Fields{}
+
+	if !flattenMsg && dbg.fields != nil {
+		dbg.fields["msg"] = nil
+	}
 
 	for k, v := range dbg.fields {
 		switch {

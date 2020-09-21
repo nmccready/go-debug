@@ -41,9 +41,28 @@ type JSONFormatter struct {
 
 	// PrettyPrint will indent all json logs
 	PrettyPrint bool
+
+	FlattenMsgFields bool
 }
 
-func (f *JSONFormatter) Format(dbg *Debugger, msg string) string {
+func (f *JSONFormatter) Format(dbg *Debugger, _msg interface{}) string {
+	var msg string
+	var msgFields *Fields
+
+	switch v := _msg.(type) {
+	case Fields:
+		msgFields = &v
+	case colorjson.Object:
+		o := Fields(v)
+		msgFields = &o
+	case map[string]interface{}:
+		o := Fields(v)
+		msgFields = &o
+	case string:
+		msg = v
+	default:
+		msg = "JSONFormatter Invalid Msg Type must be a string or map[string]interface{}"
+	}
 	/*
 		 Colors disabled due to:
 		 {
@@ -53,12 +72,23 @@ func (f *JSONFormatter) Format(dbg *Debugger, msg string) string {
 				"time": "20:53:24.798"
 			}
 	*/
-	finalized := finalizeFields(dbg, msg, false, nil)
+	finalized := finalizeFields(dbg, msg, false, f.FlattenMsgFields, nil)
 
 	if f.PrettyPrint && f.Indent == 0 {
 		f.Indent = 2
 	}
 
+	if msg != "" && msgFields == nil {
+		msgFields = &Fields{"msg": msg}
+	}
+
+	if msgFields != nil && f.FlattenMsgFields {
+		fields := *msgFields
+
+		for k, v := range fields {
+			finalized.Fields[k] = v
+		}
+	}
 	_f := colorjson.NewFormatter()
 	_f.DisabledColor = !HAS_COLORS
 	_f.HTMLEscape = f.HTMLEscape

@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nmccready/colorjson"
 	goCache "github.com/patrickmn/go-cache"
 )
 
@@ -49,14 +50,7 @@ type IDebugger interface {
 }
 
 // Terminal colors used at random.
-var colors []string = []string{
-	"31",
-	"32",
-	"33",
-	"34",
-	"35",
-	"36",
-}
+var colors []string = []string{"31", "32", "33", "34", "35", "36", "91", "92", "93", "94", "95", "96"}
 
 // Initialize with DEBUG environment variable.
 func init() {
@@ -229,7 +223,7 @@ func Debug(name string) *Debugger {
 	dbg := Debugger{name: name, prev: time.Now(), color: colors[rand.Intn(len(colors))]}
 
 	if formatter.GetHasFieldsOnly() {
-		dbg.WithFields(map[string]interface{}{"namespace": name, "msg": nil})
+		dbg.WithFields(map[string]interface{}{"namespace": name})
 
 		if HAS_TIME {
 			dbg.WithFields(map[string]interface{}{"time": nil, "delta": nil})
@@ -260,24 +254,28 @@ func (dbg *Debugger) Log(args ...interface{}) {
 		}
 	}
 
-	var strOrFunc interface{}
-	var msg string
-	var isString bool
+	var msg interface{}
 
 	if len(args) >= 1 {
-		strOrFunc = args[0]
+		arg0 := args[0]
 		args = args[1:]
 
-		msg, isString = strOrFunc.(string)
-
-		if !isString {
-			lazy, isFunc := strOrFunc.(func() string)
-			if !isFunc {
-				// coerce to string
-				msg = fmt.Sprint(strOrFunc)
-			} else {
-				msg = lazy()
-			}
+		switch v := arg0.(type) {
+		case string:
+			msg = v
+		case Fields, colorjson.Object, map[string]interface{}:
+			msg = v
+		case func() string:
+			msg = v()
+		case func() Fields:
+			msg = v()
+		case func() colorjson.Object:
+			msg = v()
+		case func() map[string]interface{}:
+			msg = v()
+		default:
+			// coerce to string
+			msg = fmt.Sprint(v)
 		}
 	}
 
