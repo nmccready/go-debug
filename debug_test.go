@@ -342,6 +342,5 @@ func TestBuildPattern(t *testing.T) {
 			ar := *actualNegs[i]
 			assert.Equal(t, er, ar, "pattern matches")
 		}
-
 	}
 }

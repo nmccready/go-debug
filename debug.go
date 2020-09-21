@@ -15,18 +15,19 @@ import (
 )
 
 var (
-	writer     io.Writer = os.Stderr
-	reg        *regexp.Regexp
-	neg        []*regexp.Regexp
-	m          sync.Mutex
-	enabled    = false
-	cache      *goCache.Cache
-	HAS_COLORS           = true
-	HAS_TIME             = true
-	formatter  Formatter = &TextFormatter{HasColor: true}
-	negRegEx             = regexp.MustCompile(`^-.*?`)
-	textRegex            = regexp.MustCompile(`(?i)text`)
-	jsonRegex            = regexp.MustCompile(`(?i)json`)
+	writer           io.Writer = os.Stderr
+	reg              *regexp.Regexp
+	neg              []*regexp.Regexp
+	m                sync.Mutex
+	enabled          = false
+	cache            *goCache.Cache
+	HAS_COLORS                 = true
+	HAS_TIME                   = true
+	defaultFormatter           = &TextFormatter{HasColor: true}
+	formatter        Formatter = defaultFormatter
+	negRegEx                   = regexp.MustCompile(`^-.*?`)
+	textRegex                  = regexp.MustCompile(`(?i)text`)
+	jsonRegex                  = regexp.MustCompile(`(?i)json`)
 )
 
 type Fields map[string]interface{}
@@ -92,6 +93,9 @@ func Disable() {
 }
 
 func SetFormatter(f Formatter) {
+	if f == nil {
+		f = defaultFormatter
+	}
 	m.Lock()
 	defer m.Unlock()
 	formatter = f
@@ -105,7 +109,11 @@ func SetFormatterString(s string) {
 
 	if jsonRegex.MatchString(s) {
 		// default to PRETTY true
-		_f = &JSONFormatter{PrettyPrint: os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == ""}
+		j := JSONFormatter{PrettyPrint: os.Getenv("DEBUG_FORMATTER_PRETTY_OFF") == ""}
+		if j.PrettyPrint && j.Indent == 0 {
+			j.Indent = 2
+		}
+		_f = &j
 	}
 
 	SetFormatter(_f)

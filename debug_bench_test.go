@@ -21,6 +21,30 @@ func BenchmarkMatch(b *testing.B) {
 	}
 }
 
+func BenchmarkMatchJson(b *testing.B) {
+	SetFormatter(&JSONFormatter{})
+	SetHasColors(false)
+	debug := Debug("something")
+	Enable("something")
+	for i := 0; i < b.N; i++ {
+		debug.Log("stuff")
+	}
+	SetFormatter(nil)
+	SetHasColors(true)
+}
+
+func BenchmarkMatchWithFields(b *testing.B) {
+	debug := Debug("something")
+	Enable("something")
+	debug.WithFields(map[string]interface{}{
+		"a": "one",
+		"b": "two",
+	})
+	for i := 0; i < b.N; i++ {
+		debug.Log("stuff")
+	}
+}
+
 func BenchmarkMatchError(b *testing.B) {
 	debug := Debug("something")
 	Enable("error*")

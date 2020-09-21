@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/TylerBrock/colorjson"
 	"github.com/fatih/color"
+	"github.com/nmccready/colorjson"
 )
 
 // JSONFormatter formats logs into parsable json
@@ -20,6 +20,7 @@ type JSONFormatter struct {
 	// HTMLEscape allows disabling html escaping in output
 	HTMLEscape bool
 
+	Indent int
 	// FieldMap allows users to customize the names of keys for default fields.
 	// As an example:
 	// formatter := &JSONFormatter{
@@ -52,29 +53,13 @@ func (f *JSONFormatter) Format(dbg *Debugger, msg string) string {
 				"time": "20:53:24.798"
 			}
 	*/
-	finalized := finalizeFields(dbg, msg, false, func(k string, v interface{}) interface{} {
-		switch v := v.(type) {
-		case error:
-			// Otherwise errors are ignored by `encoding/json`
-			// https://github.com/sirupsen/logrus/issues/137
-			return v.Error()
-		default:
-			return nil
-		}
-	})
+	finalized := finalizeFields(dbg, msg, false, nil)
 
-	// b := &bytes.Buffer{}
-
-	// encoder := json.NewEncoder(b)
-	// encoder.SetEscapeHTML(!f.DisableHTMLEscape)
-	// if f.PrettyPrint {
-	// 	encoder.SetIndent("", "  ")
-	// }
-	// err := encoder.Encode(finalized.Fields)
 	_f := colorjson.NewFormatter()
 	_f.DisabledColor = !HAS_COLORS
 	_f.HTMLEscape = f.HTMLEscape
-	_f.Indent = 2
+	_f.Indent = f.Indent
+
 	intColor, _ := strconv.Atoi(dbg.color)
 	_f.KeyMapColors["namespace"] = color.New(color.Attribute(intColor))
 	b, err := _f.Marshal(map[string]interface{}(finalized.Fields))

@@ -10,6 +10,7 @@ import (
 )
 
 func TestErrorNotLost(t *testing.T) {
+	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
 	s := formatter.Format(Debug("error_not_lost").WithField("error", errors.New("wild walrus")), "hi")
@@ -27,6 +28,7 @@ func TestErrorNotLost(t *testing.T) {
 }
 
 func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
+	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
 	s := formatter.Format(Debug("mapped_field_error").WithField("omg", errors.New("wild walrus")), "hi")
@@ -44,6 +46,7 @@ func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
 }
 
 func TestFieldClashWithTime(t *testing.T) {
+	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
 	s := formatter.Format(Debug("clash_time").WithField("time", "right now!"), "hi")
@@ -60,6 +63,7 @@ func TestFieldClashWithTime(t *testing.T) {
 }
 
 func TestFieldClashWithMsg(t *testing.T) {
+	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
 	s := formatter.Format(Debug("clash_msg").WithField("msg", errors.New("wild walrus")), "hi")
@@ -72,6 +76,7 @@ func TestFieldClashWithMsg(t *testing.T) {
 }
 
 func TestFieldClashWithNamespace(t *testing.T) {
+	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
 	s := formatter.Format(Debug("clash_namespace").WithField("namespace", errors.New("wild walrus")), "hi")
@@ -97,6 +102,7 @@ func TestJSONEntryEndsWithNewline(t *testing.T) {
 
 func TestJSONPretty(t *testing.T) {
 	HAS_TIME = false
+	SetHasColors(false)
 	SetFormatter(&JSONFormatter{PrettyPrint: true})
 
 	s := formatter.Format(Debug("pretty").WithField("dog", "wild walrus"), "hi")
