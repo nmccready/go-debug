@@ -248,7 +248,9 @@ func Debug(name string) *Debugger {
 }
 
 func (dbg *Debugger) Spawn(ns string) *Debugger {
-	return Debug(dbg.name + ":" + ns)
+	d := Debug(dbg.name + ":" + ns)
+	d.fields = dbg.fields
+	return d
 }
 
 func (dbg *Debugger) Log(args ...interface{}) {

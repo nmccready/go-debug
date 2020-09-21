@@ -273,6 +273,31 @@ func TestSpawnEnableDisable(t *testing.T) {
 	}
 }
 
+func TestSpawnCarriesFields(t *testing.T) {
+	var b []byte
+	buf := bytes.NewBuffer(b)
+	SetHasColors(false)
+	SetWriter(buf)
+	// SetHasColors(false)
+
+	cache.Flush()
+
+	Enable("foo*")
+	// Disable()
+
+	parent := Debug("foo").WithField("field1", 1)
+	child := parent.Spawn("child")
+
+	parent.Log("hi")
+	child.Log(func() string { return "cry" })
+
+	assert.Equal(t, len(cache.Items()), 2)
+	str := buf.String()
+	assert.Contains(t, str, "foo - hi\n    field1=1")
+	assert.Contains(t, str, "foo:child - cry\n    field1=1")
+
+}
+
 func ExampleEnable() {
 	Enable("mongo:connection")
 	Enable("mongo:*")
