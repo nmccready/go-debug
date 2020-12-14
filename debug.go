@@ -38,6 +38,7 @@ type Debugger struct {
 	prev   time.Time
 	fields Fields
 	color  string
+	mu     MutexWrap
 }
 
 type IDebugger interface {
@@ -268,6 +269,8 @@ func (dbg *Debugger) Log(args ...interface{}) {
 		}
 	}
 
+	dbg.mu.Lock()
+
 	var msg interface{}
 
 	if len(args) >= 1 {
@@ -294,6 +297,7 @@ func (dbg *Debugger) Log(args ...interface{}) {
 	}
 
 	preppedMsg := formatter.Format(dbg, msg)
+	dbg.mu.Unlock()
 
 	fmt.Fprintf(writer, preppedMsg, args...)
 	dbg.prev = time.Now()
@@ -312,23 +316,28 @@ func (dbg *Debugger) Warn(args ...interface{}) {
 }
 
 func (dbg *Debugger) WithFields(fields map[string]interface{}) *Debugger {
+	dbg.mu.Lock()
 	if len(dbg.fields) == 0 {
 		dbg.fields = fields
+		dbg.mu.Unlock()
 		return dbg
 	}
 
 	for k, v := range fields {
 		dbg.fields[k] = v
 	}
+	dbg.mu.Unlock()
 	return dbg
 }
 
 func (dbg *Debugger) WithField(key string, value interface{}) *Debugger {
+	dbg.mu.Lock()
 	if len(dbg.fields) == 0 {
 		dbg.fields = map[string]interface{}{}
 	}
 
 	dbg.fields[key] = value
+	dbg.mu.Unlock()
 	return dbg
 }
 
@@ -381,4 +390,25 @@ func humanizeNano(n int64) string {
 	}
 
 	return strconv.Itoa(int(n)) + suffix
+}
+
+type MutexWrap struct {
+	lock     sync.Mutex
+	disabled bool
+}
+
+func (mw *MutexWrap) Lock() {
+	if !mw.disabled {
+		mw.lock.Lock()
+	}
+}
+
+func (mw *MutexWrap) Unlock() {
+	if !mw.disabled {
+		mw.lock.Unlock()
+	}
+}
+
+func (mw *MutexWrap) Disable() {
+	mw.disabled = true
 }
