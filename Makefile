@@ -6,7 +6,11 @@ help: ## Generates this help message
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 test: ## unit tests
-	@go test -failfast -covermode=atomic -coverprofile=coverage.txt
+	@go test $(shell go list ./... | grep -v /example/ | grep -v /vendor/ | grep -v /integration) -failfast -covermode=atomic -coverprofile=coverage.txt
+
+test-thread: ## unit tests
+	go test $(shell go list ./... | grep -v /example/ | grep -v /vendor/ | grep  /integration) -failfast -covermode=atomic -coverprofile=coverage.txt
+
 
 report: ## coverage report
 	@go tool cover -html=coverage.txt

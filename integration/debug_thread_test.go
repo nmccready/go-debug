@@ -1,10 +1,12 @@
-package debug
+package integration
 
 import (
 	"bytes"
 	"strconv"
 	"sync"
 	"testing"
+
+	. "github.com/nmccready/go-debug"
 )
 
 func TestThreadSafety(t *testing.T) {
