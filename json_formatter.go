@@ -45,7 +45,7 @@ type JSONFormatter struct {
 	FlattenMsgFields bool
 }
 
-func (f *JSONFormatter) Format(dbg *Debugger, _msg interface{}) string {
+func (f *JSONFormatter) Format(dbg Debugger, _msg interface{}) string {
 	var msg string
 	var msgFields *Fields
 

@@ -13,7 +13,7 @@ func TestErrorNotLost(t *testing.T) {
 	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
-	s := formatter.Format(Debug("error_not_lost").WithField("error", errors.New("wild walrus")), "hi")
+	s := formatter.Format(*Debug("error_not_lost").WithField("error", errors.New("wild walrus")), "hi")
 
 	entry := make(map[string]interface{})
 	err := json.Unmarshal([]byte(s), &entry)
@@ -31,7 +31,7 @@ func TestErrorNotLostOnFieldNotNamedError(t *testing.T) {
 	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
-	s := formatter.Format(Debug("mapped_field_error").WithField("omg", errors.New("wild walrus")), "hi")
+	s := formatter.Format(*Debug("mapped_field_error").WithField("omg", errors.New("wild walrus")), "hi")
 
 	entry := make(map[string]interface{})
 	err := json.Unmarshal([]byte(s), &entry)
@@ -49,7 +49,7 @@ func TestFieldClashWithTime(t *testing.T) {
 	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
-	s := formatter.Format(Debug("clash_time").WithField("time", "right now!"), "hi")
+	s := formatter.Format(*Debug("clash_time").WithField("time", "right now!"), "hi")
 
 	entry := make(map[string]interface{})
 	err := json.Unmarshal([]byte(s), &entry)
@@ -66,7 +66,7 @@ func TestFieldClashWithMsg(t *testing.T) {
 	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
-	s := formatter.Format(Debug("clash_msg").WithField("msg", errors.New("wild walrus")), "hi")
+	s := formatter.Format(*Debug("clash_msg").WithField("msg", errors.New("wild walrus")), "hi")
 
 	entry := make(map[string]interface{})
 	err := json.Unmarshal([]byte(s), &entry)
@@ -79,7 +79,7 @@ func TestFieldClashWithNamespace(t *testing.T) {
 	SetHasColors(false)
 	SetFormatter(&JSONFormatter{})
 
-	s := formatter.Format(Debug("clash_namespace").WithField("namespace", errors.New("wild walrus")), "hi")
+	s := formatter.Format(*Debug("clash_namespace").WithField("namespace", errors.New("wild walrus")), "hi")
 
 	entry := make(map[string]interface{})
 	err := json.Unmarshal([]byte(s), &entry)
@@ -91,7 +91,7 @@ func TestFieldClashWithNamespace(t *testing.T) {
 func TestJSONEntryEndsWithNewline(t *testing.T) {
 	SetFormatter(&JSONFormatter{})
 
-	s := formatter.Format(Debug("newline").WithField("dog", errors.New("wild walrus")), "hi")
+	s := formatter.Format(*Debug("newline").WithField("dog", errors.New("wild walrus")), "hi")
 
 	entry := make(map[string]interface{})
 	err := json.Unmarshal([]byte(s), &entry)
@@ -105,7 +105,7 @@ func TestJSONPretty(t *testing.T) {
 	SetHasColors(false)
 	SetFormatter(&JSONFormatter{PrettyPrint: true})
 
-	s := formatter.Format(Debug("pretty").WithField("dog", "wild walrus"), "hi")
+	s := formatter.Format(*Debug("pretty").WithField("dog", "wild walrus"), "hi")
 	expected := "{\n  \"dog\": \"wild walrus\",\n  \"msg\": \"hi\",\n  \"namespace\": \"pretty\"\n}\n"
 
 	assert.Equal(t, expected, s, "is pretty")

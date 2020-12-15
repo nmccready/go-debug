@@ -38,7 +38,7 @@ type Debugger struct {
 	prev   time.Time
 	fields Fields
 	color  string
-	mu     MutexWrap
+	// mu     MutexWrap
 }
 
 type IDebugger interface {
@@ -223,35 +223,39 @@ var SetHasTime = setBoolWithLock(func(isOn bool) {
 	HAS_TIME = isOn
 })
 
+func (dbg Debugger) ApplyRootFields(name string) Debugger {
+	if formatter.GetHasFieldsOnly() {
+		dbg = *dbg.WithFields(map[string]interface{}{"namespace": name})
+
+		if HAS_TIME {
+			dbg = *dbg.WithFields(map[string]interface{}{"time": nil, "delta": nil})
+		}
+	}
+	return dbg
+}
+
 // Debug creates a debug function for `name` which you call
 // with printf-style arguments in your application or library.
-func Debug(name string) *Debugger {
+func Debug(name string) Debugger {
 	entry, cached := cache.Get(name)
 
 	if cached {
 		dbg, _ := entry.(Debugger)
-		return &dbg
+		return dbg.ApplyRootFields(name)
 	}
 
 	dbg := Debugger{name: name, prev: time.Now(), color: colors[rand.Intn(len(colors))]}
-
-	if formatter.GetHasFieldsOnly() {
-		dbg.WithFields(map[string]interface{}{"namespace": name})
-
-		if HAS_TIME {
-			dbg.WithFields(map[string]interface{}{"time": nil, "delta": nil})
-		}
-	}
+	dbg = dbg.ApplyRootFields(name)
 
 	cache.Set(name, dbg, goCache.DefaultExpiration)
 
-	return &dbg
+	return dbg
 }
 
-func (dbg *Debugger) Spawn(ns string) *Debugger {
+func (dbg Debugger) Spawn(ns string) *Debugger {
 	d := Debug(dbg.name + ":" + ns)
 	d.fields = dbg.fields
-	return d
+	return &d
 }
 
 func (dbg *Debugger) Log(args ...interface{}) {
@@ -269,8 +273,7 @@ func (dbg *Debugger) Log(args ...interface{}) {
 		}
 	}
 
-	dbg.mu.Lock()
-
+	// dbg.mu.Lock()
 	var msg interface{}
 
 	if len(args) >= 1 {
@@ -296,49 +299,46 @@ func (dbg *Debugger) Log(args ...interface{}) {
 		}
 	}
 
-	preppedMsg := formatter.Format(dbg, msg)
-	dbg.mu.Unlock()
-
+	m.Lock()
+	preppedMsg := formatter.Format(*dbg, msg)
 	fmt.Fprintf(writer, preppedMsg, args...)
+	m.Unlock()
 	dbg.prev = time.Now()
 }
 
 // prepend error/warn name as it is easier to filter!
-func (dbg *Debugger) Error(args ...interface{}) {
+func (dbg Debugger) Error(args ...interface{}) {
 	d := Debug("error:" + dbg.name)
 	d.fields = dbg.fields
 	d.Log(args...)
 }
-func (dbg *Debugger) Warn(args ...interface{}) {
+func (dbg Debugger) Warn(args ...interface{}) {
 	d := Debug("warn:" + dbg.name)
 	d.fields = dbg.fields
 	d.Log(args...)
 }
 
-func (dbg *Debugger) WithFields(fields map[string]interface{}) *Debugger {
-	dbg.mu.Lock()
+// NOT *Debugger receiver on purpose to be immutable to not deal with locks on fields
+func (dbg Debugger) WithFields(fields map[string]interface{}) *Debugger {
 	if len(dbg.fields) == 0 {
 		dbg.fields = fields
-		dbg.mu.Unlock()
-		return dbg
+		return &dbg
 	}
 
 	for k, v := range fields {
 		dbg.fields[k] = v
 	}
-	dbg.mu.Unlock()
-	return dbg
+	return &dbg
 }
 
-func (dbg *Debugger) WithField(key string, value interface{}) *Debugger {
-	dbg.mu.Lock()
+// NOT *Debugger receiver on purpose to be immutable to not deal with locks on fields
+func (dbg Debugger) WithField(key string, value interface{}) *Debugger {
 	if len(dbg.fields) == 0 {
 		dbg.fields = map[string]interface{}{}
 	}
 
 	dbg.fields[key] = value
-	dbg.mu.Unlock()
-	return dbg
+	return &dbg
 }
 
 func getColorStr(color string, isOn bool) string {
@@ -390,25 +390,4 @@ func humanizeNano(n int64) string {
 	}
 
 	return strconv.Itoa(int(n)) + suffix
-}
-
-type MutexWrap struct {
-	lock     sync.Mutex
-	disabled bool
-}
-
-func (mw *MutexWrap) Lock() {
-	if !mw.disabled {
-		mw.lock.Lock()
-	}
-}
-
-func (mw *MutexWrap) Unlock() {
-	if !mw.disabled {
-		mw.lock.Unlock()
-	}
-}
-
-func (mw *MutexWrap) Disable() {
-	mw.disabled = true
 }
