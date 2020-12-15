@@ -1,7 +1,9 @@
 package debug
 
 import (
+	"encoding/json"
 	"fmt"
+	"reflect"
 	"runtime"
 	"strconv"
 
@@ -96,12 +98,40 @@ func (f *JSONFormatter) Format(dbg Debugger, _msg interface{}) string {
 
 	intColor, _ := strconv.Atoi(dbg.color)
 	_f.KeyMapColors["namespace"] = color.New(color.Attribute(intColor))
-	b, err := _f.Marshal(map[string]interface{}(finalized.Fields))
+	b, err := _f.Marshal(prepFields(finalized.Fields))
+
 	if err != nil {
 		return fmt.Sprintf("failed to marshal fields to JSON, %v", err)
 	}
 	return string(b) + "\n"
 	// return b.String()
+}
+
+// TODO: this probably could go in colorjson
+func prepFields(f map[string]interface{}) map[string]interface{} {
+	copy := Fields{}
+	// recurse object keys and cast objects to map[string]interface{}
+	// map[string]interface{}
+	for k, valInterface := range f {
+		switch v := valInterface.(type) {
+		case json.Number, int, nil, bool, float64, error, string, []bool, []string, []float64, []int, map[string]interface{}:
+			copy[k] = v
+		default:
+			// serialize and then deserialize to copy structs to the correct types
+			mapped := map[string]interface{}{}
+			b, err := json.Marshal(v)
+
+			if err == nil {
+				err = json.Unmarshal(b, &mapped)
+			}
+
+			if err != nil {
+				panic(fmt.Sprintf("unable to cast Key: %s, Value %s to map[string]interface{}", k, reflect.TypeOf(v).String()))
+			}
+			copy[k] = mapped
+		}
+	}
+	return copy
 }
 
 func (f *JSONFormatter) GetHasFieldsOnly() bool {

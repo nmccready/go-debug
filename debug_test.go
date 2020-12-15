@@ -369,3 +369,30 @@ func TestBuildPattern(t *testing.T) {
 		}
 	}
 }
+
+func TestJSONNestedColorOff(t *testing.T) {
+	type Person struct {
+		Child *Person `json:"child,omitempty"`
+		Name  string
+	}
+
+	debug := Debug("foo")
+	SetFormatter(&JSONFormatter{})
+	SetHasColors(false)
+
+	// var b []byte
+	// buf := bytes.NewBuffer(b)
+	// SetWriter(buf)
+
+	Enable("*")
+
+	debug.Spawn("nested").WithFields(Fields{
+		"one": 1,
+		"a":   "a",
+		"Root": Person{
+			Name:  "root",
+			Child: &Person{Name: "Child"},
+		},
+	}).Log("out")
+
+}
