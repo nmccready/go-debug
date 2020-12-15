@@ -11,6 +11,8 @@ github.com/mattn/go-isatty v0.0.11 h1:FxPOTFNqGkuDUGi3H/qkUbQO4ZiBa2brKq5r0l8TGe
 github.com/mattn/go-isatty v0.0.11/go.mod h1:PhnuNfih5lzO57/f3n+odYbM4JtupLOxQOAqxQCu2WE=
 github.com/nmccready/colorjson v0.0.4 h1:g+oCvz7hw20bKIeCrR8eju4XXRcku2y+tY6N6R5luHQ=
 github.com/nmccready/colorjson v0.0.4/go.mod h1:n65NtVgGymxWEJz0pX5HHBJIM4GW/wHvkMUG4l83u5o=
+github.com/nmccready/colorjson v0.1.0 h1:csgK2WdbwgC99flZxnFAp6xPWqeWHyWhPDRQPm/Xmfo=
+github.com/nmccready/colorjson v0.1.0/go.mod h1:n65NtVgGymxWEJz0pX5HHBJIM4GW/wHvkMUG4l83u5o=
 github.com/patrickmn/go-cache v2.1.0+incompatible h1:HRMgzkcYKYpi3C8ajMPV8OFXaaRUnok+kx1WdO15EQc=
 github.com/patrickmn/go-cache v2.1.0+incompatible/go.mod h1:3Qf8kWWT7OJRJbdiICTKqZju1ZixQ/KpMGzzAfe6+WQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
