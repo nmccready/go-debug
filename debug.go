@@ -46,7 +46,7 @@ type IDebugger interface {
 	Error(...interface{})
 	Warn(...interface{})
 	Spawn(ns string) *Debugger
-	WithFields(fields map[string]interface{}) *Debugger
+	WithFields(fields Fields) *Debugger
 	WithField(key string, value interface{}) *Debugger
 }
 
@@ -319,26 +319,23 @@ func (dbg Debugger) Warn(args ...interface{}) {
 }
 
 // NOT *Debugger receiver on purpose to be immutable to not deal with locks on fields
-func (dbg Debugger) WithFields(fields map[string]interface{}) *Debugger {
-	if len(dbg.fields) == 0 {
-		dbg.fields = fields
-		return &dbg
+func (dbg Debugger) WithFields(fields Fields) *Debugger {
+	data := make(Fields, len(dbg.fields)+len(fields))
+	for k, v := range dbg.fields {
+		data[k] = v
 	}
 
 	for k, v := range fields {
-		dbg.fields[k] = v
+		data[k] = v
 	}
+
+	dbg.fields = data
 	return &dbg
 }
 
 // NOT *Debugger receiver on purpose to be immutable to not deal with locks on fields
 func (dbg Debugger) WithField(key string, value interface{}) *Debugger {
-	if len(dbg.fields) == 0 {
-		dbg.fields = map[string]interface{}{}
-	}
-
-	dbg.fields[key] = value
-	return &dbg
+	return dbg.WithFields(Fields{key: value})
 }
 
 func getColorStr(color string, isOn bool) string {
