@@ -27,7 +27,6 @@ var (
 	defaultFormatter           = &TextFormatter{HasColor: true}
 	formatter        Formatter = defaultFormatter
 	negRegEx                   = regexp.MustCompile(`^-.*?`)
-	textRegex                  = regexp.MustCompile(`(?i)text`)
 	jsonRegex                  = regexp.MustCompile(`(?i)json`)
 )
 
@@ -258,7 +257,7 @@ func (dbg Debugger) Spawn(ns string) *Debugger {
 	return &d
 }
 
-func (dbg *Debugger) Log(args ...interface{}) {
+func (dbg Debugger) Log(args ...interface{}) {
 	if !enabled {
 		return
 	}
@@ -300,7 +299,7 @@ func (dbg *Debugger) Log(args ...interface{}) {
 	}
 
 	m.Lock()
-	preppedMsg := formatter.Format(*dbg, msg)
+	preppedMsg := formatter.Format(dbg, msg)
 	fmt.Fprintf(writer, preppedMsg, args...)
 	m.Unlock()
 	dbg.prev = time.Now()

@@ -33,6 +33,17 @@ func TestDefault(t *testing.T) {
 	}
 }
 
+func TestInterface(t *testing.T) {
+	var b []byte
+	buf := bytes.NewBuffer(b)
+	SetWriter(buf)
+
+	var debug IDebugger
+	d := Debug("foo")
+	debug = d
+	debug.Log("testI ")
+}
+
 func TestDefaultLazy(t *testing.T) {
 	var b []byte
 	buf := bytes.NewBuffer(b)
@@ -295,7 +306,6 @@ func TestSpawnCarriesFields(t *testing.T) {
 	str := buf.String()
 	assert.Contains(t, str, "foo - hi\n    field1=1")
 	assert.Contains(t, str, "foo:child - cry\n    field1=1")
-
 }
 
 func ExampleEnable() {
@@ -394,5 +404,4 @@ func TestJSONNestedColorOff(t *testing.T) {
 			Child: &Person{Name: "Child"},
 		},
 	}).Log("out")
-
 }
