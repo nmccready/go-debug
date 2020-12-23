@@ -298,10 +298,8 @@ func (dbg Debugger) Log(args ...interface{}) {
 		}
 	}
 
-	m.Lock()
 	preppedMsg := formatter.Format(dbg, msg)
 	fmt.Fprintf(writer, preppedMsg, args...)
-	m.Unlock()
 	dbg.prev = time.Now()
 }
 
